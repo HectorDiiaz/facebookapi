@@ -81,7 +81,7 @@ def validate_token():
     return jsonify(data)
 
 def send_whatsapp_message(phone_number_id, to_number, message_text):
-    url = f'https://graph.facebook.com/v19.0/{phone_number_id}/messages'
+    url = f'https://graph.facebook.com/v19.0/230450613474703/messages'
     headers = {
         'Authorization': f'Bearer {ACCESS_TOKEN}',
         'Content-Type': 'application/json'
@@ -96,6 +96,7 @@ def send_whatsapp_message(phone_number_id, to_number, message_text):
             "body": message_text
         }
     }
+
 
     logging.info(f"Sending message to {to_number} using phone_number_id {phone_number_id}: {message_text}")
     response = requests.post(url, headers=headers, json=payload)
