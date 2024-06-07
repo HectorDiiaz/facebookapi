@@ -96,7 +96,6 @@ def send_whatsapp_message(phone_number_id, to_number, message_text):
     response = requests.post(url, headers=headers, json=payload)
     logging.info(f"Response from WhatsApp API: {response.json()}")
     return response.json()
-
 # Convertir la aplicación Flask a ASGI usando WsgiToAsgi
 asgi_app = WsgiToAsgi(app)
 
