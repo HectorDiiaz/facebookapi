@@ -53,13 +53,14 @@ def webhook():
                 for change in entry['changes']:
                     if change['field'] == 'messages':
                         message_event = change['value']
+                        phone_number_id = message_event['metadata']['phone_number_id']  # Extraer phone_number_id
                         for message in message_event['messages']:
                             if message['type'] == 'text':
                                 text = message['text']['body']
                                 from_number = message['from']
                                 logging.info(f"Received message from {from_number}: {text}")
-                                # Envía una respuesta automática
-                                send_whatsapp_message(from_number, f"Recibido: {text}")
+                                # Envía una respuesta automática usando el phone_number_id
+                                send_whatsapp_message(phone_number_id, from_number, f"Recibido: {text}")
 
         return 'EVENTO RECIBIDO', 200
 
