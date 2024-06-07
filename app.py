@@ -5,6 +5,7 @@ import requests
 from asgiref.wsgi import WsgiToAsgi
 
 
+
 app = Flask(__name__)
 
 # Configuración de logging
@@ -54,13 +55,16 @@ def webhook():
                     if change['field'] == 'messages':
                         message_event = change['value']
                         phone_number_id = message_event['metadata']['phone_number_id']  # Extraer phone_number_id
-                        for message in message_event['messages']:
-                            if message['type'] == 'text':
-                                text = message['text']['body']
-                                from_number = message['from']
-                                logging.info(f"Received message from {from_number}: {text}")
-                                # Envía una respuesta automática usando el phone_number_id
-                                send_whatsapp_message(phone_number_id, from_number, f"Recibido: {text}")
+                        if 'messages' in message_event:
+                            for message in message_event['messages']:
+                                if message['type'] == 'text':
+                                    text = message['text']['body']
+                                    from_number = message['from']
+                                    logging.info(f"Received message from {from_number}: {text}")
+                                    # Envía una respuesta automática usando el phone_number_id
+                                    send_whatsapp_message(phone_number_id, from_number, f"Recibido: {text}")
+                        else:
+                            logging.warning("No 'messages' key in message_event")
 
         return 'EVENTO RECIBIDO', 200
 
@@ -84,6 +88,7 @@ def send_whatsapp_message(phone_number_id, to_number, message_text):
     }
     payload = {
         "messaging_product": "whatsapp",
+        "recipient_type": "individual",
         "to": to_number,
         "type": "text",
         "text": {
@@ -96,6 +101,7 @@ def send_whatsapp_message(phone_number_id, to_number, message_text):
     response = requests.post(url, headers=headers, json=payload)
     logging.info(f"Response from WhatsApp API: {response.json()}")
     return response.json()
+
 # Convertir la aplicación Flask a ASGI usando WsgiToAsgi
 asgi_app = WsgiToAsgi(app)
 
