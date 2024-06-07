@@ -3,6 +3,10 @@ import logging
 from flask import Flask, request, jsonify
 import requests
 from asgiref.wsgi import WsgiToAsgi
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env (solo para entorno local)
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -17,7 +21,7 @@ ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 if not VERIFY_TOKEN or not ACCESS_TOKEN:
     logging.error("Las variables de entorno VERIFY_TOKEN o ACCESS_TOKEN no están configuradas correctamente.")
 else:
-    logging.info("Las variables de entorno se han leído correctamente.", VERIFY_TOKEN, ACCESS_TOKEN)
+    logging.info("Las variables de entorno se han leído correctamente.")
 
 @app.route('/')
 def home():
@@ -62,13 +66,30 @@ def webhook():
 
         return 'EVENTO RECIBIDO', 200
 
+@app.route('/validate_token', methods=['GET'])
+def validate_token():
+    url = 'https://graph.facebook.com/debug_token'
+    params = {
+        'input_token': ACCESS_TOKEN,
+        'access_token': ACCESS_TOKEN
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    logging.info(f"Token validation response: {data}")
+    return jsonify(data)
+
 def send_whatsapp_message(to_number, message_text):
     url = f'https://graph.facebook.com/v12.0/me/messages?access_token={ACCESS_TOKEN}'
     headers = {'Content-Type': 'application/json'}
     payload = {
-        'messaging_product': 'whatsapp',
-        'to': to_number,
-        'text': {'body': message_text}
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": to_number,
+        "type": "text",
+        "text": {
+            "preview_url": False,
+            "body": message_text
+        }
     }
 
     logging.info(f"Sending message to {to_number}: {message_text}")
