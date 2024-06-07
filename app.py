@@ -3,10 +3,7 @@ import logging
 from flask import Flask, request, jsonify
 import requests
 from asgiref.wsgi import WsgiToAsgi
-from dotenv import load_dotenv
 
-# Cargar variables de entorno desde .env (solo para entorno local)
-load_dotenv()
 
 app = Flask(__name__)
 
