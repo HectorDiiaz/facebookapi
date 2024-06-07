@@ -1,0 +1,35 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+.VENV/
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de log y bases de datos locales
+*.log
+*.sqlite3
+
+# Directorio de configuraciones de VS Code
+.vscode/
+
+# Archivos de configuración de entorno
+.env
+*.env
+
+# Archivos de configuración de IDE
+.idea/
+*.iml
+
+# Directorios de construcción
+build/
+dist/
+*.egg-info/
+
+# Archivos creados por el sistema operativo
+.DS_Store
+Thumbs.db
