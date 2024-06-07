@@ -15,9 +15,9 @@ ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
 # Verificar si las variables de entorno se están leyendo correctamente
 if not VERIFY_TOKEN or not ACCESS_TOKEN:
-    logging.error("Las variables de entorno VERIFY_TOKEN o ACCESS_TOKEN no están configuradas correctamente.", VERIFY_TOKEN, ACCESS_TOKEN)
+    logging.error("Las variables de entorno VERIFY_TOKEN o ACCESS_TOKEN no están configuradas correctamente.")
 else:
-    logging.info("Las variables de entorno se han leído correctamente.")
+    logging.info("Las variables de entorno se han leído correctamente.", VERIFY_TOKEN, ACCESS_TOKEN)
 
 @app.route('/')
 def home():
