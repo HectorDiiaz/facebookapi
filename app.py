@@ -4,7 +4,7 @@ from asgiref.wsgi import WsgiToAsgi
 app = Flask(__name__)
 
 VERIFY_TOKEN = 'asdasdasdasdsa_token_123ñld_verify_token'
-ACCESS_TOKEN = 'TU_TOKEN_DE_ACCESO'
+ACCESS_TOKEN = 'f805a35a31284a8847ab5a861baa68b4'
 
 @app.route('/')
 def home():
