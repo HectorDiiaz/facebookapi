@@ -4,8 +4,6 @@ from flask import Flask, request, jsonify
 import requests
 from asgiref.wsgi import WsgiToAsgi
 
-
-
 app = Flask(__name__)
 
 # Configuración de logging
@@ -21,17 +19,165 @@ if not VERIFY_TOKEN or not ACCESS_TOKEN:
 else:
     logging.info("Las variables de entorno se han leído correctamente.")
 
-@app.route('/')
-def home():
-    logging.info("Home endpoint accessed")
-    return "Hello, World!"
+# Función para enviar un mensaje de WhatsApp
+def send_whatsapp_message(phone_number_id, to_number, message_payload):
+    url = f'https://graph.facebook.com/v19.0/{phone_number_id}/messages'
+    headers = {
+        'Authorization': f'Bearer {ACCESS_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.post(url, headers=headers, json=message_payload)
+    logging.info(f"Response from WhatsApp API: {response.json()}")
+    return response.json()
 
-@app.route('/echo', methods=['POST'])
-def echo():
-    data = request.get_json()
-    logging.info(f"Echo endpoint accessed with data: {data}")
-    return jsonify(data)
+# Función para enviar el menú interactivo
+def send_menu(phone_number_id, to_number):
+    menu_payload = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "interactive",
+        "interactive": {
+            "type": "list",
+            "header": {
+                "type": "text",
+                "text": "Selecciona una opción"
+            },
+            "body": {
+                "text": "Por favor, elige una de las siguientes opciones:"
+            },
+            "footer": {
+                "text": "Gracias por usar nuestro servicio"
+            },
+            "action": {
+                "button": "Ver Opciones",
+                "sections": [
+                    {
+                        "title": "Menú Principal",
+                        "rows": [
+                            {
+                                "id": "option_1",
+                                "title": "Enviar una imagen",
+                                "description": "Recibe una imagen de nuestro catálogo"
+                            },
+                            {
+                                "id": "option_2",
+                                "title": "Enviar un audio",
+                                "description": "Escucha un audio informativo"
+                            },
+                            {
+                                "id": "option_3",
+                                "title": "Enviar una ubicación",
+                                "description": "Obtén nuestra ubicación"
+                            },
+                            {
+                                "id": "option_4",
+                                "title": "Enviar un documento",
+                                "description": "Descarga un documento"
+                            },
+                            {
+                                "id": "option_5",
+                                "title": "Enviar un video",
+                                "description": "Mira un video explicativo"
+                            },
+                            {
+                                "id": "option_6",
+                                "title": "Salir",
+                                "description": "Finaliza la conversación"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+    send_whatsapp_message(phone_number_id, to_number, menu_payload)
 
+# Función para manejar las selecciones del menú
+def handle_menu_selection(phone_number_id, to_number, selected_option):
+    if selected_option == "option_1":
+        # Enviar una imagen
+        image_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "image",
+            "image": {
+                "link": "https://example.com/path/to/your/image.jpg",  # URL de la imagen
+                "caption": "Aquí tienes la imagen solicitada."
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, image_payload)
+
+    elif selected_option == "option_2":
+        # Enviar un audio
+        audio_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "audio",
+            "audio": {
+                "link": "https://example.com/path/to/your/audio.mp3"  # URL del audio
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, audio_payload)
+
+    elif selected_option == "option_3":
+        # Enviar una ubicación
+        location_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "location",
+            "location": {
+                "latitude": -34.6037,
+                "longitude": -58.3816,
+                "name": "Nuestra Ubicación",
+                "address": "Buenos Aires, Argentina"
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, location_payload)
+
+    elif selected_option == "option_4":
+        # Enviar un documento
+        document_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "document",
+            "document": {
+                "link": "https://example.com/path/to/your/document.pdf",  # URL del documento
+                "filename": "documento.pdf"
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, document_payload)
+
+    elif selected_option == "option_5":
+        # Enviar un video
+        video_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "video",
+            "video": {
+                "link": "https://example.com/path/to/your/video.mp4",  # URL del video
+                "caption": "Aquí tienes el video solicitado."
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, video_payload)
+
+    elif selected_option == "option_6":
+        # Salir
+        exit_payload = {
+            "messaging_product": "whatsapp",
+            "to": to_number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": "Gracias por usar nuestro servicio. ¡Adiós!"
+            }
+        }
+        send_whatsapp_message(phone_number_id, to_number, exit_payload)
+
+    else:
+        # Opción no reconocida, enviar el menú nuevamente
+        send_menu(phone_number_id, to_number)
+
+# Ruta y lógica del webhook
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
@@ -49,59 +195,27 @@ def webhook():
         logging.info(f"Webhook POST request received with data: {data}")
 
         # Procesa el mensaje recibido
-        if data['object'] == 'whatsapp_business_account':
-            for entry in data['entry']:
-                for change in entry['changes']:
-                    if change['field'] == 'messages':
-                        message_event = change['value']
-                        phone_number_id = message_event['metadata']['phone_number_id']  # Extraer phone_number_id
-                        if 'messages' in message_event:
-                            for message in message_event['messages']:
-                                if message['type'] == 'text':
-                                    text = message['text']['body']
-                                    from_number = message['from']
-                                    logging.info(f"Received message from {from_number}: {text}")
-                                    # Envía una respuesta automática usando el phone_number_id
-                                    send_whatsapp_message(phone_number_id, from_number, f"Recibido: {text}")
-                        else:
-                            logging.warning("No 'messages' key in message_event")
+        if data.get('object') == 'whatsapp_business_account':
+            for entry in data.get('entry', []):
+                for change in entry.get('changes', []):
+                    if change.get('field') == 'messages':
+                        message_event = change.get('value', {})
+                        phone_number_id = message_event.get('metadata', {}).get('phone_number_id')
+                        for message in message_event.get('messages', []):
+                            if message.get('type') == 'text':
+                                text = message['text']['body']
+                                from_number = message['from']
+                                logging.info(f"Received message from {from_number}: {text}")
+
+                                # Verificar si el mensaje es una selección del menú
+                                if message.get('interactive', {}).get('type') == 'list_response':
+                                    selected_option = message['interactive']['list_response']['id']
+                                    handle_menu_selection(phone_number_id, from_number, selected_option)
+                                else:
+                                    # Enviar el menú si el mensaje no es una selección
+                                    send_menu(phone_number_id, from_number)
 
         return 'EVENTO RECIBIDO', 200
-
-@app.route('/validate_token', methods=['GET'])
-def validate_token():
-    url = 'https://graph.facebook.com/debug_token'
-    params = {
-        'input_token': ACCESS_TOKEN,
-        'access_token': ACCESS_TOKEN
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    logging.info(f"Token validation response: {data}")
-    return jsonify(data)
-
-def send_whatsapp_message(phone_number_id, to_number, message_text):
-    url = f'https://graph.facebook.com/v19.0/230450613474703/messages'
-    headers = {
-        'Authorization': f'Bearer {ACCESS_TOKEN}',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to_number,
-        "type": "text",
-        "text": {
-            "preview_url": False,
-            "body": message_text
-        }
-    }
-
-
-    logging.info(f"Sending message to {to_number} using phone_number_id {phone_number_id}: {message_text}")
-    response = requests.post(url, headers=headers, json=payload)
-    logging.info(f"Response from WhatsApp API: {response.json()}")
-    return response.json()
 
 # Convertir la aplicación Flask a ASGI usando WsgiToAsgi
 asgi_app = WsgiToAsgi(app)
