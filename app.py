@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 # Leer variables de entorno
 load_dotenv()
 VERIFY_TOKEN = os.getenv('VERIFY_TOKEN')
-ACCESS_TOKEN = os.getenv('WHATSAPP_TOKEN')
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
 # Función para enviar un mensaje de texto por WhatsApp
 def send_text_message(phone_number_id, to_number, message):
