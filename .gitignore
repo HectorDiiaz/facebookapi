@@ -4,7 +4,8 @@ env/
 ENV/
 .venv/
 .VENV/
-
+# Entorno virtual personalizado
+venv311/
 # Archivos de caché de Python
 __pycache__/
 *.py[cod]
