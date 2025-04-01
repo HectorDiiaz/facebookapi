@@ -20,34 +20,31 @@ def download_audio(media_id):
     try:
         audio_url = url_response.json()["url"]
     except KeyError:
-        logging.error("No se encontró la clave 'url' en la respuesta:")
-        logging.error(url_response.json())
-        raise Exception("No se pudo obtener la URL del audio desde Meta.")
+        print("Error al obtener URL del audio. Respuesta:")
+        print(url_response.json())
+        raise Exception("No se pudo obtener la URL del audio.")
 
     # Paso 2: Descargar el archivo
-    audio_data = requests.get(audio_url, headers=headers).content
-    file_path = "input.ogg"
+    response = requests.get(audio_url, headers=headers)
 
+    content_type = response.headers.get("Content-Type", "")
+    print(f"Content-Type del audio: {content_type}")
+
+    if "audio/ogg" not in content_type:
+        print("Advertencia: El archivo no parece ser un .ogg válido.")
+
+    file_path = "input.ogg"
     with open(file_path, "wb") as f:
-        f.write(audio_data)
+        f.write(response.content)
+
+    # Paso 3: Validar archivo descargado
+    if not os.path.exists(file_path):
+        raise FileNotFoundError("El archivo de audio no se guardó correctamente.")
+
+    file_size = os.path.getsize(file_path)
+    print(f"Archivo descargado: {file_path} ({file_size} bytes)")
+
+    if file_size < 1000:
+        print("Advertencia: El archivo descargado es muy pequeño, puede estar corrupto.")
 
     return file_path
-
-def send_text_response(to_number, message_text):
-    url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "text",
-        "text": {
-            "body": message_text
-        }
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    return response.json()
