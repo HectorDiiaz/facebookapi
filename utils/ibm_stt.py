@@ -17,7 +17,7 @@ def convert_to_flac(input_path, output_path="converted.flac"):
 
 def transcribe_audio(file_path):
     api_key = os.getenv("IBM_API_KEY")
-    url = os.getenv("IBM_URL")
+    url = os.getenv("IBM_STT_URL")
 
     authenticator = IAMAuthenticator(api_key)
     stt = SpeechToTextV1(authenticator=authenticator)
